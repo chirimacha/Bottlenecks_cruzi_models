@@ -14,18 +14,20 @@
 # - Consider adding congenital transmission in hosts
 
 # Store the path to this source code:
-inFolder <- getwd()
+#inFolder <- getwd()
 #inFolder <- "~/Dropbox/Aaron_work/cuy_migration/models/"
+inFolder <- "~/Dropbox/Drake_book_chapter/"
+
 
 # Function to set the important parameters as global variables.
 initialize <- function(cuyStartPopulationIn = 10, # initial guinea pig population
-                       dogPopulationIn = 1, # dog population size
+                       dogPopulationIn = 0, # dog population size
                        humanPopulationIn = 0, # human population size
                        chickenPopulationIn = 0, # chicken population size
                        ncuyinfectedIn = 1,
                        nbuginfectedIn = 0,
                        feedIntervalIn = 2, # weeks between feedings for bugs
-                       incubationIn = 6, # weeks before exposed bug is infectious
+                       incubationIn = 2, # weeks before exposed bug is infectious
                        BtoCInfectProbIn = 0.00068, # prob of infecting a cuy w/ one bite
                        BtoDInfectProbIn = 0.00068, # prob of infecting a dog w/ one bite
                        BtoHInfectProbIn = 0.00058, # prob of infecting a human w/ one bite
@@ -34,24 +36,24 @@ initialize <- function(cuyStartPopulationIn = 10, # initial guinea pig populatio
                        bugLifetimeIn = 28, # weeks
                        humanLifetimeIn = 2600, # 50 years
                        probSuperCuyIn = 0.33, # prob that each gp is a superspreader
-                       cuyPersistTimeIn = 8, # weeks before infection clears in normal (non-superspreader) gp
+                       cuyPersistTimeIn = 12, # weeks before infection clears in normal (non-superspreader) gp
                        cuyPrefFactorIn = 2.5,
                        dogPrefFactorIn = 2.5,
                        chickenPrefFactorIn = 4.8,
-                       cuyBottleStartTimeIn = 20,
-                       cuyBottlePopSizeIn = 2,
-                       cuyBottleEndTimeIn = 40,
+                       cuyBottleStartTimeIn = 5,
+                       cuyBottlePopSizeIn = 18,
+                       cuyBottleEndTimeIn = 30,
                        cuyToReintroduceIn = 8,
                        infectedCuyToReintroduceIn = 0,
                        # The following inputs control the vector population dynamics
-                       vectorPopBaseline = 10, # bug population size when no gp present
-                       vectorPopCuyMultiplier = 100, # factor by which bug population increases when gp are present
+                       vectorPopBaseline = 1000, # bug population size when no gp present
+                       vectorPopCuyMultiplier = 1, # factor by which bug population increases when gp are present
                        
-                       bugBottleStartTimeIn = 30, # set to -1 for no bottleneck
+                       bugBottleStartTimeIn = -1, # set to -1 for no bottleneck
                        bugBottlePopSizeIn = 0,
                        bugBottleEndTimeIn = 40,
                        newBugsPerDayAfterBottle = 5, # rate by which bug population increases after bottleneck
-                       infectedBugReintroduceAfterBottle = 1 # number of new bugs that should be infected on the week after the bottleneck.
+                       infectedBugReintroduceAfterBottle = 0 # number of new bugs that should be infected on the week after the bottleneck.
                        ) {
 
   # Store all inputs as global variables
@@ -131,7 +133,7 @@ doSim <- function(nsims = 5,
   if (!exists("cuyStartPopulation")) initialize()
   
   # Set some useful standard deviations for our Gaussian distributions:
-  sdFeed <- 1 # sd of weeks between feeding for vectors
+  sdFeed <- 0 # sd of weeks between feeding for vectors
   sdBD <- 5 # sd of bug lifetime (weeks)
   sdCD <- 4 # sd of cuy lifetime (weeks)
   sdDD <- 50 # sd of dog lifetime (weeks)
@@ -268,7 +270,9 @@ doSim <- function(nsims = 5,
             cI <- c(cI, rep(1, infectedCuyToReintroduce), rep(0, (cuyToReintroduce - infectedCuyToReintroduce)))
             cID <- c(cID, rep(week, infectedCuyToReintroduce), rep(0, (cuyToReintroduce - infectedCuyToReintroduce)))
             cSuper <- c(cSuper, runif(cuyToReintroduce) < probSuperCuy)
-        }  
+            cuyBottleStartTime <<-cuyBottleStartTime+52  #have bottleneck repeat next year
+            cuyBottleEndTime <<- cuyBottleEndTime+52  #
+        }
 
         # Calculate the current vector population size:
         if (bugBottleStartTime > 0 & week >= bugBottleStartTime & week < bugBottleEndTime) {
@@ -513,22 +517,22 @@ doSim <- function(nsims = 5,
   par(mfrow=c(2,4))
 
   # Plot total vectors
-  matplot(t(bugPopNew), main="Total Vectors", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(bugPopNew, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(bugPopNew, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(bugPopNew, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  matplot(t(bugPopNew), main="Total Vectors", type="l", xlab="Week", ylab="N", col="black")
+  #points(apply(bugPopNew, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(bugPopNew, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(bugPopNew, 2, quantile, 0.025), type="l", lwd=2, col="red")
 
   # Plot total guinea pigs:
-  matplot(t(cuyPop), main="Total Guinea Pigs", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(cuyPop, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(cuyPop, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(cuyPop, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  matplot(t(cuyPop), main="Total Guinea Pigs", type="l", xlab="Week", ylab="N", col="black")
+  #points(apply(cuyPop, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(cuyPop, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(cuyPop, 2, quantile, 0.025), type="l", lwd=2, col="red")
 
   # Plot total dogs
   matplot(t(dogPop), main="Total Dogs", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(dogPop, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(dogPop, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(dogPop, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  #points(apply(dogPop, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(dogPop, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(dogPop, 2, quantile, 0.025), type="l", lwd=2, col="red")
 
   # Plot total humans:
   matplot(t(humanPop), main="Total Humans", type="l", xlab="Week", ylab="N", col="grey")
@@ -537,22 +541,22 @@ doSim <- function(nsims = 5,
   points(apply(humanPop, 2, quantile, 0.025), type="l", lwd=2, col="red")
   
   # Plot vectors infected
-  matplot(t(infectBug), main="Infected Vectors", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(infectBug, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(infectBug, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(infectBug, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  matplot(t(infectBug), main="Infected Vectors", type="l", xlab="Week", ylab="N", col="black")
+  #points(apply(infectBug, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(infectBug, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(infectBug, 2, quantile, 0.025), type="l", lwd=2, col="red")
   
   # Plot cuyes infected
-  matplot(t(infectCuy), main="Infected Guinea Pigs", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(infectCuy, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(infectCuy, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(infectCuy, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  matplot(t(infectCuy), main="Infected Guinea Pigs", type="l", xlab="Week", ylab="N", col="black")
+  #points(apply(infectCuy, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(infectCuy, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(infectCuy, 2, quantile, 0.025), type="l", lwd=2, col="red")
 
   # Plot dogs infected
   matplot(t(infectDog), main="Infected Dogs", type="l", xlab="Week", ylab="N", col="grey")
-  points(apply(infectDog, 2, quantile, 0.5), type="l", lwd=2, col="red")
-  points(apply(infectDog, 2, quantile, 0.975), type="l", lwd=2, col="red")
-  points(apply(infectDog, 2, quantile, 0.025), type="l", lwd=2, col="red")
+  #points(apply(infectDog, 2, quantile, 0.5), type="l", lwd=2, col="red")
+  #points(apply(infectDog, 2, quantile, 0.975), type="l", lwd=2, col="red")
+  #points(apply(infectDog, 2, quantile, 0.025), type="l", lwd=2, col="red")
 
   # Plot humans infected
   matplot(t(infectHuman), main="Infected Humans", type="l", xlab="Week", ylab="N", col="grey")
@@ -588,7 +592,7 @@ doSim <- function(nsims = 5,
   if (makeOutput) {
     
     if (outdir == "none") {
-      outfolder<-"./output/AT"
+      outfolder<-"./output/MZL"
       timestamp<- gsub(":","-",gsub(" ","_",Sys.time()))
       outdir<-paste(outfolder,timestamp, sep="_")
     }
@@ -637,13 +641,15 @@ CtoBInfectProb <- function(cI, cID, isSuper, weekNum, cuyPersistTime) {
       # This is a supershedder cuy.
       # Assume 100% chance of infecting bug during the "cuyPersistTime", then
       # 20% for rest of life:
-      if (weeksSinceInfection < cuyPersistTime) return(1)
+      #if (weeksSinceInfection < cuyPersistTime) return(1)
+      if (weeksSinceInfection > 2 & weeksSinceInfection < cuyPersistTime ) return(1)
       else return(0.2)
     }
     else {
       # This is a normal, non-supershedder cuy. Assume 100% chance of
       # infecting bug during the "cuyPersistTime", then 0% for rest of life:
-      if (weeksSinceInfection < cuyPersistTime) return(1)
+      #if (weeksSinceInfection < cuyPersistTime) return(1)
+      if (weeksSinceInfection > 2 & weeksSinceInfection < cuyPersistTime ) return(1)
       else return(0)
     }
   }
@@ -654,7 +660,7 @@ CtoBInfectProb <- function(cI, cID, isSuper, weekNum, cuyPersistTime) {
 DtoBInfectProb <- function(dI, dID, weekNum) {
   
   if (dI == 0) return(0) # this dog is not infected
-
+  if (dID<=2) return(0) #dog isnt infectious yet
   # Based on Gurtler 1996, the probability that an infected dog
   # transmits infection to an uninfected vector with a single bite is
   # 48.7% overall. This probability doesn't seem to vary much with the
@@ -829,23 +835,48 @@ integrateHumanInfectivity <- function() {
 #doSim(nsims = 5, simLength = 365, makeOutput=TRUE, outdir="~/output/multiple_host/all_hosts_1cuy_infected_v2/", vectorDataPrefix="vector_prev", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
 
 cat("Doing simulation...\n")
-initialize(cuyStartPopulationIn = 10,
-           dogPopulationIn = 2,
-           humanPopulationIn = 4,
-           chickenPopulationIn = 3,
-           ncuyinfectedIn = 1,
-           nbuginfectedIn = 0,
-           cuyBottleStartTimeIn = 40,
-           cuyBottleEndTimeIn = 90,
-           cuyBottlePopSizeIn = 0,
-           cuyToReintroduceIn = 10,
-           infectedCuyToReintroduce = 1,
-           vectorPopBaseline = 100, 
-           vectorPopCuyMultiplier = 10,
-           bugBottleStartTimeIn = -1,
-           bugBottleEndTimeIn = 150,
-           bugBottlePopSizeIn = 0,
-           newBugsPerDayAfterBottle = 5,
-           infectedBugReintroduceAfterBottle = 1
-           )
-doSim(nsims = 100, simLength = 300, makeOutput=TRUE, outdir="../output/all_hosts_1vector_1cuy/", vectorDataPrefix="vector_prev", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
+
+
+initialize(
+cuyStartPopulationIn = 10, # initial guinea pig population
+dogPopulationIn = 0, # dog population size
+humanPopulationIn = 0, # human population size
+chickenPopulationIn = 0, # chicken population size
+ncuyinfectedIn = 1,
+nbuginfectedIn = 0,
+feedIntervalIn = 1.5, # weeks between feedings for bugs
+incubationIn = 2, # weeks before exposed bug is infectious
+BtoCInfectProbIn = 0.00068, # prob of infecting a cuy w/ one bite
+BtoDInfectProbIn = 0.00068, # prob of infecting a dog w/ one bite
+BtoHInfectProbIn = 0.00058, # prob of infecting a human w/ one bite
+cuyLifetimeIn = 17, # weeks a gp lives, on average (4 mo)
+dogLifetimeIn = 260, # 5 years (260 weeks)
+bugLifetimeIn = 28, # weeks
+humanLifetimeIn = 2600, # 50 years
+probSuperCuyIn = 0.5, # prob that each gp is a superspreader
+cuyPersistTimeIn = 12, # weeks before infection clears in normal (non-superspreader) gp
+cuyPrefFactorIn = 1,
+dogPrefFactorIn = 1,
+chickenPrefFactorIn = 1,
+cuyBottleStartTimeIn = 18,
+cuyBottlePopSizeIn = 2,
+cuyBottleEndTimeIn = 30,
+cuyToReintroduceIn = 8,
+infectedCuyToReintroduceIn = 0,
+# The following inputs control the vector population dynamics
+vectorPopBaseline = 1000, # bug population size when no gp present
+vectorPopCuyMultiplier = 1, # factor by which bug population increases when gp are present
+
+bugBottleStartTimeIn = -1, # set to -1 for no bottleneck
+bugBottlePopSizeIn = 0,
+bugBottleEndTimeIn = 1,
+newBugsPerDayAfterBottle = 5, # rate by which bug population increases after bottleneck
+infectedBugReintroduceAfterBottle = 0 # number of new bugs that should be infected on the week after the bottleneck.
+)
+
+#OUTDIR<-"~/Dropbox/Drake_book_chapter/output/vec_1000_BOTTLE_10cuy_0dog/"
+doSim(nsims =100 , simLength = 52*10, makeOutput=TRUE, outdir="none", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
+
+#doSim(nsims =1 , simLength = 52*10, makeOutput=TRUE, outdir="../output/test_bottle3/", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
+
+

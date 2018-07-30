@@ -14,12 +14,14 @@
 # - Consider adding congenital transmission in hosts
 
 # Store the path to this source code:
-inFolder <- getwd()
+#inFolder <- getwd()
 #inFolder <- "~/Dropbox/Aaron_work/cuy_migration/models/"
+inFolder <- "~/Dropbox/Drake_book_chapter/"
+
 
 # Function to set the important parameters as global variables.
 initialize <- function(cuyStartPopulationIn = 10, # initial guinea pig population
-                       dogPopulationIn = 1, # dog population size
+                       dogPopulationIn = 3, # dog population size
                        humanPopulationIn = 0, # human population size
                        chickenPopulationIn = 0, # chicken population size
                        ncuyinfectedIn = 1,
@@ -44,14 +46,14 @@ initialize <- function(cuyStartPopulationIn = 10, # initial guinea pig populatio
                        cuyToReintroduceIn = 8,
                        infectedCuyToReintroduceIn = 0,
                        # The following inputs control the vector population dynamics
-                       vectorPopBaseline = 10, # bug population size when no gp present
-                       vectorPopCuyMultiplier = 100, # factor by which bug population increases when gp are present
+                       vectorPopBaseline = 1000, # bug population size when no gp present
+                       vectorPopCuyMultiplier = 1, # factor by which bug population increases when gp are present
                        
-                       bugBottleStartTimeIn = 30, # set to -1 for no bottleneck
+                       bugBottleStartTimeIn = -1, # set to -1 for no bottleneck
                        bugBottlePopSizeIn = 0,
                        bugBottleEndTimeIn = 40,
                        newBugsPerDayAfterBottle = 5, # rate by which bug population increases after bottleneck
-                       infectedBugReintroduceAfterBottle = 1 # number of new bugs that should be infected on the week after the bottleneck.
+                       infectedBugReintroduceAfterBottle = 0 # number of new bugs that should be infected on the week after the bottleneck.
                        ) {
 
   # Store all inputs as global variables
@@ -244,7 +246,7 @@ doSim <- function(nsims = 5,
 
         # Adjust the guinea pig population size if this is the first
         # week of the guinea pig bottleneck
-        if (doCuyBottleneck & week == cuyBottleStartTime) {
+        if (doCuyBottleneck & week = cuyBottleStartTimes) {
             # Reduce the current guinea pig population size:
             cuyCurrentPopulation <<- cuyBottlePopSize
             # Randomly determine which guinea pigs to keep:
@@ -258,7 +260,7 @@ doSim <- function(nsims = 5,
 
         # Adjust the guinea pig population if we've reached the
         # end of the guinea pig bottleneck.
-        if (doCuyBottleneck & week == cuyBottleEndTime) {
+        if (doCuyBottleneck & week = cuyBottleEndTime) {
             cuyCurrentPopulation <<- cuyCurrentPopulation + cuyToReintroduce
             # Make all the new cuyes born this week and set death week
             # randomly:
@@ -268,6 +270,7 @@ doSim <- function(nsims = 5,
             cI <- c(cI, rep(1, infectedCuyToReintroduce), rep(0, (cuyToReintroduce - infectedCuyToReintroduce)))
             cID <- c(cID, rep(week, infectedCuyToReintroduce), rep(0, (cuyToReintroduce - infectedCuyToReintroduce)))
             cSuper <- c(cSuper, runif(cuyToReintroduce) < probSuperCuy)
+            cuyBottleStartTimes<<-cuyBottleStartTimes+52  #have bottleneck repeat next year
         }  
 
         # Calculate the current vector population size:
@@ -831,21 +834,57 @@ integrateHumanInfectivity <- function() {
 cat("Doing simulation...\n")
 initialize(cuyStartPopulationIn = 10,
            dogPopulationIn = 2,
-           humanPopulationIn = 4,
-           chickenPopulationIn = 3,
+           humanPopulationIn = 0,
+           chickenPopulationIn = 0,
            ncuyinfectedIn = 1,
            nbuginfectedIn = 0,
-           cuyBottleStartTimeIn = 40,
-           cuyBottleEndTimeIn = 90,
-           cuyBottlePopSizeIn = 0,
-           cuyToReintroduceIn = 10,
-           infectedCuyToReintroduce = 1,
-           vectorPopBaseline = 100, 
-           vectorPopCuyMultiplier = 10,
+           cuyBottleStartTimeIn = 20,cuyBottlePopSizeIn = 2, cuyBottleEndTimeIn = 40, cuyToReintroduceIn = 8,
+infectedCuyToReintroduce = 0,
+           vectorPopBaseline = 1000,
+           vectorPopCuyMultiplier = 1,
+           infectedCuyToReintroduceIn = 0,
            bugBottleStartTimeIn = -1,
            bugBottleEndTimeIn = 150,
            bugBottlePopSizeIn = 0,
            newBugsPerDayAfterBottle = 5,
-           infectedBugReintroduceAfterBottle = 1
+           infectedBugReintroduceAfterBottle = 0
            )
-doSim(nsims = 100, simLength = 300, makeOutput=TRUE, outdir="../output/all_hosts_1vector_1cuy/", vectorDataPrefix="vector_prev", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
+
+initialize(
+cuyStartPopulationIn = 10, # initial guinea pig population
+dogPopulationIn = 1, # dog population size
+humanPopulationIn = 0, # human population size
+chickenPopulationIn = 0, # chicken population size
+ncuyinfectedIn = 1,
+nbuginfectedIn = 0,
+feedIntervalIn = 2, # weeks between feedings for bugs
+incubationIn = 6, # weeks before exposed bug is infectious
+BtoCInfectProbIn = 0.00068, # prob of infecting a cuy w/ one bite
+BtoDInfectProbIn = 0.00068, # prob of infecting a dog w/ one bite
+BtoHInfectProbIn = 0.00058, # prob of infecting a human w/ one bite
+cuyLifetimeIn = 17, # weeks a gp lives, on average (4 mo)
+dogLifetimeIn = 260, # 5 years (260 weeks)
+bugLifetimeIn = 28, # weeks
+humanLifetimeIn = 2600, # 50 years
+probSuperCuyIn = 0.33, # prob that each gp is a superspreader
+cuyPersistTimeIn = 8, # weeks before infection clears in normal (non-superspreader) gp
+cuyPrefFactorIn = 2.5,
+dogPrefFactorIn = 2.5,
+chickenPrefFactorIn = 4.8,
+cuyBottleStartTimeIn = 20,
+cuyBottlePopSizeIn = 2,
+cuyBottleEndTimeIn = 40,
+cuyToReintroduceIn = 8,
+infectedCuyToReintroduceIn = 0,
+# The following inputs control the vector population dynamics
+vectorPopBaseline = 1000, # bug population size when no gp present
+vectorPopCuyMultiplier = 1, # factor by which bug population increases when gp are present
+
+bugBottleStartTimeIn = -1, # set to -1 for no bottleneck
+bugBottlePopSizeIn = 0,
+bugBottleEndTimeIn = 40,
+newBugsPerDayAfterBottle = 5, # rate by which bug population increases after bottleneck
+infectedBugReintroduceAfterBottle = 0 # number of new bugs that should be infected on the week after the bottleneck.
+)
+
+doSim(nsims =2 , simLength = 52*10, makeOutput=TRUE, outdir="../output/vec_1000_BOTTLE_10cuy_1dog/", vectorDataPrefix="vector_prev", cuyDataPrefix="cuy_prev", dogDataPrefix="dog_prev", humanDataPrefix="human_prev")
